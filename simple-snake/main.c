@@ -8,16 +8,20 @@
 void clear_screen() {
     system("cls");
 }
+
 void pause_screen() {
     system("pause > nul");
 }
+
 void gotoxy(int x, int y) {
     COORD in = { (short)x, (short)y };
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), in);
 }
+
 void ConsoleAnsiMode() {
     SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 }
+
 void ConsoleCursor() {
     HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_CURSOR_INFO structCursorInfo;
@@ -26,7 +30,7 @@ void ConsoleCursor() {
     SetConsoleCursorInfo(h, &structCursorInfo);
 }
 
-#define UseAnsi 0 //Work on ansi windows 10 юбилейной серии и дальше и почти любой unix... Но windows 7, 8, 8.1 и 10 до серии не работает, для них нужен макрос 0
+#define UseAnsi 0 //if ansi doesn't work write null
 #if UseAnsi
 void rgb_color(int r, int g, int b, int size_font, short fix_bug) {
     printf("\x1b[38;2;%i;%i;%i;%im", r, g, b, size_font);
@@ -115,7 +119,7 @@ int main() {
     int money_max_die_casual_bounce[] = { 10 };
     int money_open_box[] = { 50 };
 
-    //То что можно купить в магазине
+    //item for snake
     float casual_iter_mult = 1;
     int max_die_casual_bounce = 0;
     int add_size_snake = 0;
@@ -128,16 +132,16 @@ int main() {
     while (1) {
         while (first_game == 1) { //Shop
             reset_color(); clear_screen();
-            printf("У вас: %i рублей\n", money[0]);
-            printf("Нажмите цифру (0-7) чтобы купить:\n\n");
-            printf("0. %i рублей\t- множитель очков (ваш множитель = %i)\n", money_casual_iter_mult[0], (int)casual_iter_mult);
-            printf("1. %i рублей\t- отскок (у вас %i отскоков)\n", money_max_die_casual_bounce[0], max_die_casual_bounce);
-            printf("2. %i рублей\t- открыть лутбокс\n", money_open_box[0]);
-            printf("3. %i рублей\t- замедлить змею (ваша скорость = %i)\n", money_add_speed_snake[0], (102 - speed_snake));
-            printf("4. %i рублей\t- ускорить змею (ваша скорость = %i)\n", money_subtract_speed_snake[0], (102 - speed_snake));
-            printf("5. %i рублей\t- стартовый размер (ваш размер = %i)\n", money_size_snake[0], add_size_snake + 1);
-            printf("6. %i рублей\t- скин змеи (ваш скин = %i)\n", money_skin_snake[0], skin_snake);
-            printf("7. %i рублей\t- оформления уровня (ваше оформление = %i)\n", money_skin_level[0], skin_level);
+            printf("You have: %i$\n", money[0]);
+            printf("Press the button (0-7) to buy:\n\n");
+            printf("0. %i$\t- score multiplier (multiplier = %i)\n", money_casual_iter_mult[0], (int)casual_iter_mult);
+            printf("1. %i$\t- bounce (bounce = %i)\n", money_max_die_casual_bounce[0], max_die_casual_bounce);
+            printf("2. %i$\t- open loot box\n", money_open_box[0]);
+            printf("3. %i$\t- increase speed (speed = %i)\n", money_add_speed_snake[0], (102 - speed_snake));
+            printf("4. %i$\t- decrease speed (speed = %i)\n", money_subtract_speed_snake[0], (102 - speed_snake));
+            printf("5. %i$\t- snake size (size = %i)\n", money_size_snake[0], add_size_snake + 1);
+            printf("6. %i$\t- skin snake (skin = %i)\n", money_skin_snake[0], skin_snake);
+            printf("7. %i$\t- level design (level design = %i)\n", money_skin_level[0], skin_level);
             pause_screen();
             char pay_symbol = _getch();
             int old_money = money[0];
@@ -150,8 +154,8 @@ int main() {
             skin_snake += buy_item(pay_symbol == '6', money, money_skin_snake, 7, skin_snake, 1);
             skin_level += buy_item(pay_symbol == '7', money, money_skin_level, 7, skin_level, 1);
             if (open_box == 1) {
-                const char* array_loot_add[3] = { "Вам повезло! Плюс %i рублей!", "Вы выиграли! Плюс %i рублей! Поздравляю!", "Плюс %i рублей! Поздравляю!" };
-                const char* array_loot_minus[3] = { "Вам повезло! Минус %i рублей!", "Вы выиграли! Минус %i рублей! Поздравляю!", "Минус %i рублей! Поздравляю!" };
+                const char* array_loot_add[3] = { "You're lucky! Plus %i$!", "You win! Plus %i$! Congratulations!", "Plus %i$! Congratulations!" };
+                const char* array_loot_minus[3] = { "You're lucky! Minus %i$!", "You win! Minus %i$! Congratulations!", "Minus %i$! Congratulations!" };
                 int casino_money = ((rand() % 9) * 10);
                 money[0] += casino_money;
                 if (money_open_box[0] > casino_money) { printf(array_loot_minus[rand() % 3], abs(casino_money - money_open_box[0])); }
@@ -164,19 +168,19 @@ int main() {
             clear_screen(); break;
         }
 
-        //Глобально:
+        //Global
         int width = 60, height = 18;
         int x_global = 20, y_global = 5;
-        short use_statistics = 1; //Статистика вверху слева
-        int x_statistics = 0, y_statistics = 0; //Статистика вверху слева
+        short use_statistics = 1; //statistics
+        int x_statistics = 0, y_statistics = 0; //statistics
         int* move_x = (int*)malloc(sizeof(int) * (width * height));
         int* move_y = (int*)malloc(sizeof(int) * (width * height));
         int x = 2, y = 2;
         short block_x = 0, block_y = 0;
         short die_snake = 0;
-        int size_snake = 2 + add_size_snake; //змея с размером 2 равна 1, вот почему плюсуем 2
+        int size_snake = 2 + add_size_snake; //snake with size 2 equals 1
 
-        //Разное
+        //Other
         int dir_x = 0, dir_y = 0;
         int old_x = 0, old_y = 0;
         first_game = 1;
@@ -185,14 +189,14 @@ int main() {
         int y_apple = (rand() % (height - 1)) + 1;
         int win_count = (height - 1) * (width - 1) - 1;
         short* block_position = calloc(height * width, sizeof(short));
-        int die_casual_bounce = 0; //Считает удары об стенку
-        int iter = 0; //Итерация нужны для рендера, чтобы пропускать ход
-        int size_snake_now = 0; //размер змеи на данный момент
+        int die_casual_bounce = 0; //count bounce
+        int iter = 0;
+        int size_snake_now = 0; //snake size now
         char border_symbol = ' ';
         if (skin_level == 3) { border_symbol = '@'; }
         for (int i = 0; i < width * height; i++) { move_x[i] = -1; move_y[i] = -1; }
 
-        //Настройки цвета
+        //Settings color
         struct color_preset preset[6] = {
             { {"color 00"}, {0,0,0},       {128,128,128}},
             { {"color 70"}, {128,128,128}, {204,204,204}},
@@ -246,7 +250,9 @@ int main() {
                     die_snake = 1;
                 }
                 //Save Life Snake
-                if (die_snake == 0) { die_casual_bounce = 0; }
+                if (die_snake == 0) { 
+                    die_casual_bounce = 0; 
+                }
                 if (die_snake == 1) {
                     x = move_x[size_snake_now - 2];
                     y = move_y[size_snake_now - 2];
@@ -300,7 +306,7 @@ int main() {
                 if (skin_snake == 4) { reset_color(); rgb_color(10, 196, 128, 2, 1); char matrix[3] = { "01" }; putchar(matrix[rand() % 2]); }
                 if (skin_snake == 5) {
                     iter++;
-                    for (int i = 0; i < size_snake_now; i++) { //В цикле сделать цвета
+                    for (int i = 0; i < size_snake_now; i++) {
                         gotoxy(move_x[i] + x_global, move_y[i] + y_global);
                         if (skin_snake == 5) {
                             if ((iter % 10 == 0) || (i == (size_snake_now - 1)) || size_snake_now < 10) {
@@ -351,15 +357,15 @@ int main() {
         if (win_count <= size_snake - 1) {
             reset_color(); Sleep(350); clear_screen();
             gotoxy(((int)(width * 0.5)) - 5 + x_global, ((int)(height * 0.5)) + y_global);
-            printf("Вы победили!");
+            printf("You win!");
             Sleep(2500); clear_screen();
             gotoxy(((int)(width * 0.5)) - 11 + x_global, ((int)(height * 0.5)) + y_global);
-            printf("Создатель игры for_example");
+            printf("Game creator for_example");
             gotoxy(((int)(width * 0.5)) - 11 + 13 + x_global, ((int)(height * 0.5)) + y_global);
             Sleep(1500);
             rgb_color(240, 240, 240, 7, 1);
             border_print(' ', x_global, y_global, height, width, 40);
-            const char* gradient_words[4] = { "Спасибо за игру!", "Надеюсь вам понравилось!", "Создатель игры:", "@for_example" };
+            const char* gradient_words[4] = { "Thanks for playing!", "Hope you enjoyed!", "You the best!", "@for_example" };
             int gradient_color[4] = { 240, 204, 128, 0 };
             for (int k = 0; k < 4; k++) {
                 rgb_color(gradient_color[k], gradient_color[k], gradient_color[k], 7, 1);
