@@ -18,19 +18,17 @@ void gotoxy(int x, int y) {
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), in);
 }
 
+void ConsoleCursor() { //off cursor console
+    CONSOLE_CURSOR_INFO info = { 25, 0 };
+    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+}
+
 void ConsoleAnsiMode() {
     SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 }
 
-void ConsoleCursor() {
-    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_CURSOR_INFO structCursorInfo;
-    GetConsoleCursorInfo(h, &structCursorInfo);
-    structCursorInfo.bVisible = 0;
-    SetConsoleCursorInfo(h, &structCursorInfo);
-}
-
 #define UseAnsi 0 //if ansi doesn't work write null
+
 #if UseAnsi
 void rgb_color(int r, int g, int b, int size_font, short fix_bug) {
     printf("\x1b[38;2;%i;%i;%i;%im", r, g, b, size_font);
@@ -39,6 +37,7 @@ void rgb_color(int r, int g, int b, int size_font, short fix_bug) {
 void reset_color() {
     printf("\033[0m");
 }
+
 #else
 void rgb_color(int r, int g, int b, int size_font, short fix_bug) {
     if ((r == 0 && g == 0 && b == 0) && (fix_bug == 1)) { r = 7; }
@@ -57,18 +56,18 @@ struct color_preset {
     int color_border[3];
 };
 
-void border_print(char symbol, int x_pos, int y_pos, int height, int width, int sleep_print) {
+void border_print(char symbol, int x, int y, int height, int width, int sleep_print) {
     for (int i = 0; i <= height; i++) {
-        gotoxy(x_pos, i + y_pos);
+        gotoxy(x, i + y);
         putchar(symbol);
-        gotoxy(width + x_pos, height - i + y_pos);
+        gotoxy(width + x, height - i + y);
         putchar(symbol);
         Sleep(sleep_print);
     }
     for (int i = 0; i <= width; i++) {
-        gotoxy(width - i + x_pos, y_pos);
+        gotoxy(width - i + x, y);
         putchar(symbol);
-        gotoxy(i + x_pos, height + y_pos);
+        gotoxy(i + x, height + y);
         putchar(symbol);
         Sleep(sleep_print);
     }
@@ -88,12 +87,12 @@ void inside_print(char symbol, int x_pos, int y_pos, int height, int width, int 
     free(color);
 }
 
-int buy_item(int buy, int money[], int price_item[], int count_item, int index_item, int add) {
-    if (index_item >= count_item) { index_item = count_item - 1; }
+int buy_item(int buy, int money[], int price_item[], int max_item, int index_item, int add) {
+    if (index_item >= max_item) { index_item = max_item - 1; }
     if (money[0] >= price_item[index_item] && buy == 1) {
         money[0] -= price_item[index_item];
         index_item += 1;
-        if (index_item >= count_item) { index_item = count_item - 1; }
+        if (index_item >= max_item) { index_item = max_item - 1; }
         price_item[0] = price_item[index_item];
         return add;
     }
@@ -104,9 +103,7 @@ int buy_item(int buy, int money[], int price_item[], int count_item, int index_i
 int main() {
     ConsoleAnsiMode();
     ConsoleCursor();
-    SetConsoleCP(1251);
-    SetConsoleOutputCP(1251);
-    short first_game = 0;
+    srand(time(0));
 
     //Money
     int money[] = { 0 };
@@ -120,7 +117,7 @@ int main() {
     int money_open_box[] = { 50 };
 
     //item for snake
-    float casual_iter_mult = 1;
+    int casual_iter_mult = 1;
     int max_die_casual_bounce = 0;
     int add_size_snake = 0;
     int speed_snake = 22;
@@ -128,13 +125,13 @@ int main() {
     int skin_level = 0;
     int open_box = 0;
 
-    srand(time(0));
+    short first_game = 0;
     while (1) {
         while (first_game == 1) { //Shop
             reset_color(); clear_screen();
             printf("You have: %i$\n", money[0]);
             printf("Press the button (0-7) to buy:\n\n");
-            printf("0. %i$\t- score multiplier (multiplier = %i)\n", money_casual_iter_mult[0], (int)casual_iter_mult);
+            printf("0. %i$\t- score multiplier (multiplier = %i)\n", money_casual_iter_mult[0], casual_iter_mult);
             printf("1. %i$\t- bounce (bounce = %i)\n", money_max_die_casual_bounce[0], max_die_casual_bounce);
             printf("2. %i$\t- open loot box\n", money_open_box[0]);
             printf("3. %i$\t- increase speed (speed = %i)\n", money_add_speed_snake[0], (102 - speed_snake));
@@ -240,6 +237,7 @@ int main() {
                 move_x[size_snake_now] = x;
                 move_y[size_snake_now] = y;
                 size_snake_now += 1;
+
                 //Die Snake
                 for (int i = 0; i < size_snake_now - 1; i++) {
                     if (move_x[i] == x && move_y[i] == y) { die_snake = 1; break; }
@@ -329,7 +327,7 @@ int main() {
                 size_snake_now -= 1;
             }
 
-            //Print other (statistics)
+            //Print statistics
             if (use_statistics == 1) {
                 if (skin_level == 0) { rgb_color(0, 0, 0, 7, 1); }
                 if (skin_level == 1) { rgb_color(204, 204, 204, 7, 1); }
@@ -337,17 +335,12 @@ int main() {
                 if (skin_level == 3) { rgb_color(0, 0, 0, 7, 1); }
                 if (skin_level == 4) { rgb_color(194, 156, 10, 7, 1); }
                 if (skin_level == 5) { rgb_color(48, 156, 222, 7, 1); }
-                gotoxy(x_statistics, 0 + y_statistics); printf("                 ");
+                gotoxy(x_statistics + 7, 0 + y_statistics); 
+                printf("    ");
                 gotoxy(x_statistics, 0 + y_statistics);
-                printf("x - %i", x);
-                gotoxy(x_statistics, 1 + y_statistics); printf("                 ");
+                printf("Size - %i", size_snake - 1);
                 gotoxy(x_statistics, 1 + y_statistics);
-                printf("y - %i", y);
-                gotoxy(x_statistics, 2 + y_statistics); printf("                 ");
-                gotoxy(x_statistics, 2 + y_statistics);
-                printf("size snake - %i", size_snake - 1);
-                gotoxy(x_statistics, 3 + y_statistics);
-                printf("win count - %i ", win_count);
+                printf("Win  - %i", win_count);
                 gotoxy(x + x_global, y + y_global);
             }
             if (win_count <= size_snake - 1) { break; }
@@ -357,16 +350,16 @@ int main() {
         //Win
         if (win_count <= size_snake - 1) {
             reset_color(); Sleep(350); clear_screen();
-            gotoxy(((int)(width * 0.5)) - 5 + x_global, ((int)(height * 0.5)) + y_global);
+            gotoxy(((int)(width * 0.5)) - 4 + x_global, ((int)(height * 0.5)) + y_global);
             printf("You win!");
             Sleep(2500); clear_screen();
-            gotoxy(((int)(width * 0.5)) - 11 + x_global, ((int)(height * 0.5)) + y_global);
-            printf("Game creator for_example");
-            gotoxy(((int)(width * 0.5)) - 11 + 13 + x_global, ((int)(height * 0.5)) + y_global);
+            gotoxy(((int)(width * 0.5)) - 7 + x_global, ((int)(height * 0.5)) + y_global);
+            printf("by for_example");
+            gotoxy(((int)(width * 0.5)) - 7 + 6 + x_global, ((int)(height * 0.5)) + y_global);
             Sleep(1500);
             rgb_color(240, 240, 240, 7, 1);
             border_print(' ', x_global, y_global, height, width, 40);
-            const char* gradient_words[4] = { "Thanks for playing!", "Hope you enjoyed!", "You the best!", "@for_example" };
+            const char* gradient_words[4] = { "Congratulations!", "Thanks for playing!", "Hope you enjoyed!", "@for_example" };
             int gradient_color[4] = { 240, 204, 128, 0 };
             for (int k = 0; k < 4; k++) {
                 rgb_color(gradient_color[k], gradient_color[k], gradient_color[k], 7, 1);
@@ -381,6 +374,7 @@ int main() {
         }
         pause_screen();
         free(block_position);
-        free(move_x); free(move_y);
+        free(move_x);
+        free(move_y);
     }
 }
