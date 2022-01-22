@@ -188,7 +188,7 @@ int main() {
         int x_apple = (rand() % (width - 1)) + 1;
         int y_apple = (rand() % (height - 1)) + 1;
         int win_count = (height - 1) * (width - 1) - 1;
-        short* block_position = calloc(height * width, sizeof(short));
+        short* block_position = (short*)calloc(height * width, sizeof(short));
         int die_casual_bounce = 0; //count bounce
         int iter = 0;
         int size_snake_now = 0; //snake size now
@@ -302,7 +302,7 @@ int main() {
                 if (skin_snake == 0) { rgb_color(255, 255, 255, 7, 1); putchar(' '); }
                 if (skin_snake == 1) { rgb_color(global_color * 0.35, global_color, global_color + rand() % 128, 7, 0); putchar(' '); }
                 if (skin_snake == 2) { reset_color(); putchar('o'); }
-                if (skin_snake == 3) { rgb_color(move_x[size_snake_now - 1] * 1.5 + 15, 40 + move_y[size_snake_now - 1] * 6, 40 + move_x[size_snake_now - 1] * 6, 7, 0); putchar(' '); }
+                if (skin_snake == 3) { rgb_color(move_x[size_snake_now-1]*1.5+15, 40+move_y[size_snake_now-1]*6, 40+move_x[size_snake_now-1]*6, 7, 0); putchar(' '); }
                 if (skin_snake == 4) { reset_color(); rgb_color(10, 196, 128, 2, 1); char matrix[3] = { "01" }; putchar(matrix[rand() % 2]); }
                 if (skin_snake == 5) {
                     iter++;
@@ -310,7 +310,8 @@ int main() {
                         gotoxy(move_x[i] + x_global, move_y[i] + y_global);
                         if (skin_snake == 5) {
                             if ((iter % 10 == 0) || (i == (size_snake_now - 1)) || size_snake_now < 10) {
-                                rgb_color(sin(((float)y) / height) * 64 + 24, (cos(((float)x) / width) + sin(((float)y) / height)) * 255, cos(((float)y) / height) * 225, 7, 0); putchar(' ');
+                                rgb_color(sin(((float)y)/height)*64+24, (cos(((float)x)/width)+sin(((float)y)/height))*255, cos(((float)y)/height)*225, 7, 0);
+                                putchar(' ');
                             }
                         }
                     }
